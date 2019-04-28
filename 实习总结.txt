@@ -1,0 +1,101 @@
+1.在SpringMVC中，使用form表单进行action跳转，会自动加上当前页面的根目录，此时需要使用绝对路径来规范action的目标地址。
+2.SqlSessionTemplate是一个代理类，内部它会为每次请求创建线程安全的sqlsession，并与Spring进行集成，在方法执行完毕之后会自动关闭。 
+mybatis中的sqlsession本身是一个快速创建和销毁的类，在于spring的配合中最好不要直接操作sqlsession，让spring自动管理。
+在dao中不要直接配置sqlsession，可以使用SqlsessionDaoSupport并且配置为@Repository就可以了
+3.JSON.stringify（）使Json数据序列化
+4.使用POI(HSSF)操作Excel 
+5.JAVA操作XML文档主要有四种方式，分别是DOM、SAX、JDOM和DOM4J，DOM和SAX是官方提供的，而JDOM和DOM4J则是引用第三方库的，其中用的最多的是DOM4J方式。运行效率和内存使用方面最优的是SAX，但是由于SAX是基于事件的方式，
+所以SAX无法在编写XML的过程中对已编写内容进行修改，但对于不用进行频繁修改的需求，还是应该选择使用SAX。
+6.解析wsdl文档成java代码
+F:\worksapce\WebService_Client\src>wsimport -keep -p com.cxf http://localhost:8081/MyWebService?wsdl
+7.c3p0要和数据库jar一起用。
+8.oracle表名和字段要打引号的原因：
+(1)oracle表和字段是有大小写的区别。oracle默认是大写，如果我们用双引号括起来的就区分大小写，如果没有，系统会自动转成大写。
+(2)我们在使用navicat使用可视化创建数据库时候，navicat自动给我们加上了“”。
+9.Mybaits中userMapper.insertSelective(user)是添加user中的非空属性
+和userMapper.insert(user),是每个字段都要添加一遍
+10.只有紧跟在PageHelper.startPage方法后的第一个Mybatis的查询（Select）方法会被分页。
+11.url带的参数传递到服务器端都是String类型的，不能直接传一个对象
+12.Java反射技术，在动态运行时能获取任意对象、类的属性，方法；
+   Java集合中的泛型，是防止错误输入的，只在编译阶段有效，通过反射可以绕过编译。
+13.shiro.ini配置中主要配置有四大类：main，users，roles，urls
+14.在JunitTestCase中，使用@ContextConfiguration注解引入配置文件。
+15.在shiro自定义realm,
+//在doGetAuthenticationInfo先进行username判断是否存在，然后将username和数据库passwrod封装成info，再在其他方法中与token进行密码匹配。
+// 如果身份认证验证成功，返回一个AuthenticationInfo实现；
+// 1共同标识 2数据库密码/凭据，3realm的名字
+SimpleAuthenticationInfo info = new SimpleAuthenticationInfo(username, "1231", getName());
+16.shiro学习
+http://jinnianshilongnian.iteye.com/blog/2018398
+17.对于请求url,shiro过滤器会先拦截，springmvc后拦截。对于springmvc请求，可直接在.ini设置拦截，但是要全拼，/**/**。
+18.在shiro中使用jsp标签的方式设置权限来控制是否显示相关连接，但是不能保证在地址栏中的链接访问。
+可以使用注解，在进入请求之前进行权限控制。
+19.springmvc有局部异常处理，全局异常统一处理。
+20.web.xml中配置元素的加载顺序：context-param -> listener -> filter -> servlet
+21.shiro的注解要在springmvc.xml中配置,因为shiro的注解在Controller层中，spring为springmvc的父容器，spring不能访问Controller。
+PS:spring-context.xml 核心配置文件中，该配置文件会被ContextLoaderListenerclass加在，Spring会创建一个WebApplicationContext上下文，
+称为父上下文（父容器） ，保存在 ServletContext中，
+而spring-mvc.xml是DispatcherServlet,可以同时配置多个，每个 DispatcherServlet有一个自己的上下文对象（WebApplicationContext），
+称为子上下文（子容器），子上下文可以访问父上下文中的内容，但父上下文不能访问子上下文中的内容
+22.对象写入文本要被序列化,Cookie是个文本,因此存入Cookie,对象要被序列化。
+23.如果有多个realm,则采用认证策略进行验证。认证策略实际上是AuthenticationStrategy这个接口，它有三个实现：
+(1)FirstSuccessfulStrategy:只要有一个Realm验证成功即可，只返回第一个Realm身份验证成功的认证
+信息，其他的忽略。
+(2)AtLeatOneSuccessfulStrategy:只要有一个Realm验证成功即可，和FirstSuccessfulStrategy不同，将
+返回所有Realm身份校验成功的认证信息。
+(3)AllSuccessfulStrategy:所有Realm验证成功才算成功，且返回所有Realm身份认证成功的认证信息，如
+果有一个失败就失败了。
+我们之前使用的ModularRealmAuthenticator默认是AtLeatOneSuccessfulStrategy。
+24.Quartz https://www.w3cschool.cn/quartz_doc/quartz_doc-h4ux2cq6.html  https://www.bilibili.com/video/av36062910/?p=16
+25.java生成二维码的两种方式 https://www.cnblogs.com/xch-yang/p/5475869.html
+26.serialVersionUID，序列化操作的时候系统会把当前类的serialVersionUID写入到序列化文件中，当反序列化时系统会去检测文件中的serialVersionUID，
+判断它是否与当前类的serialVersionUID一致，如果一致就说明序列化类的版本与当前类版本是一样的，可以反序列化成功，否则失败。
+通常写死。
+27.一种生成PDF报表的Java组件--iText。通过iText不仅可以生成PDF或rtf的文档，而且可以将XML、Html文件转化为PDF文件。
+需要注意的是，IText使用的单位是pt而不是px，一帮情况下要想保持原来px的大小需要将px*3/4 
+28.iText的使用：https://blog.csdn.net/weixin_36380516/article/details/76984283
+https://www.cnblogs.com/ssslinppp/p/4976922.html
+29.@ResponseBody  @ResponseBody这个注解通常使用在控制层（controller）的方法上，其作用是将方法的返回值以特定的格式
+写入到response的body区域，进而将数据返回给客户端。当方法上面没有写ResponseBody,底层会将方法的返回值封装为ModelAndView
+对象。通常和ajax一同使用，其作用相当于使用PrintWriter将参数输出到页面(out.print(params);).
+30.Content-disposition其实可以控制用户请求所得的内容存为一个文件的时候提供一个默认的文件名，
+文件直接在浏览器上显示或者在访问时弹出文件下载对话框。例：Response.AppendHeader("Content-Disposition","attachment;filename=FileName.txt");
+31.http响应头：https://blog.csdn.net/qq_22172133/article/details/81209275
+32.代理模式有静态代理，JDK动态代理，Cglib代理。JDK动态代理与CGLib动态代理均是实现Spring AOP的基础。
+33.@RestController注解相当于@ResponseBody ＋ @Controller合在一起的作用，而且不能返回jsp,html页面，不能进行解析。
+34.SpringMVC处理前台表单提交日期类型数据。
+（1）使用Spring注解@DateTimeFormat(pattern = "yyyy-MM-dd")为Date类型字段格式化，前台使用<input type="date"/>
+（2）前台使用<input type="text">xxxx/xx/xx</input/>,springmvc会自动转换成Date。springmvc默认使用。
+     springmvc自动配置的格式默认为“dd/MM/yyyy”，可以在.properties中配置spring.mvc.date-format=yyyy-MM-dd.
+（3）从数据库查出来的值，通过@JsonFormat在返回给前端前做格式转换。
+（4）@DatetimeFormat是将String转换成Date，一般前台给后台传值时用
+	 @JsonFormat(pattern="yyyy-MM-dd")  将Date转换成String  一般后台传值给前台时
+	 例：@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+		private Date updateTime;
+35.使用thymeleaf给<input type="date">赋值，使用th:field<input type="date" th:field="${emp.birth}" >
+使用 th:value注意日期格式，为xxxx-xx-xx。例：2018-02-05.月份不能大于12，日不能大于31。
+36.根据SpringMVC中的HiddenHttpMethodFilter源码，更改请求方式，可创建一个input项，name="_method";值就是我们指定的请求方式
+例：<input type="hidden" name="_method" value="put"/>在该form表单中请求为PUT请求。
+37.JDBC连接Mysql5 com.mysql.jdbc.Driver；
+   JDBC连接Mysql6以上 com.mysql.cj.jdbc.Driver:
+38.springboot2.0新特性：http://www.54tianzhisheng.cn/2018/03/06/SpringBoot2-Migration-Guide/
+39.MyBatis的@Options注解在查询数据的情况下能够设置缓存时间；在插入数据时能获取对象生成自增的主键值并能封装到当前对象。
+40.response.sendError(int sc):使用指定的状态码发送一个错误响应至客户端。例：response.sendError(404);页面会跳转到404页面。
+response.setStatus():设置响应的状态码。例：response.setStatus(200)
+41.拦截器和过滤器的区别：https://www.cnblogs.com/panxuejun/p/7715917.html
+42..aa{pointer-events:none}禁用鼠标事件，该样式使元素不会触发事件。
+43.网页返回上一页的用法之一
+<a class="btn btn-default radius" onclick="javascript:history.back(-1)">&nbsp;返回上一页&nbsp;</a>
+44.HttpServletResponse实例对象获得输出流有两种方式：
+	①PrintWriter out=response.getWriter();
+	out对象用于输出字符流数据
+	②ServletOutputStream? os=response.getOutputStream();
+	os用于输出字符流数据或者二进制的字节流数据都可以
+	PS:这两个方法互相排斥，调用了其中的任何一个方法后，就不能再调用另一方法。只能有一个流
+45.springboot整合shiro,自动跳转404报错
+springboot有着自己的错误处理机制，出现错误会在后进行跳转，不会被shiro拦截。但是在请求通过后却使用shiro的session。所以对Shiro来说“你不让我负责的事，为什么要跟我要结果”。
+参考：https://www.cnblogs.com/ginponson/p/6217057.html
+	  https://blog.csdn.net/catoop/article/details/63257702
+46.项目中查询不到数据但是在数据库中可以查到。需要设置数据编码格式
+	 jdbc:mysql://localhost:3306/teachingbase?useUnicode=true&characterEncoding=utf8
+47.使用zTree时，不是最后一个node，其他node不显示name。设置view.showLine=false;就可以正常显示了，但是这个属性是控制显示连接线的。版本jquery.ztree.all-3.5.min.js
