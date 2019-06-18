@@ -70,9 +70,10 @@ https://www.cnblogs.com/ssslinppp/p/4976922.html
 £¨3£©´ÓÊý¾Ý¿â²é³öÀ´µÄÖµ£¬Í¨¹ý@JsonFormatÔÚ·µ»Ø¸øÇ°¶ËÇ°×ö¸ñÊ½×ª»»¡£
 £¨4£©@DatetimeFormatÊÇ½«String×ª»»³ÉDate£¬Ò»°ãÇ°Ì¨¸øºóÌ¨´«ÖµÊ±ÓÃ
 	 @JsonFormat(pattern="yyyy-MM-dd")  ½«Date×ª»»³ÉString  Ò»°ãºóÌ¨´«Öµ¸øÇ°Ì¨Ê±
-	 Àý£º@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
-		private Date updateTime;
+	 Àý£º@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+			private Date createTime;
 35.Ê¹ÓÃthymeleaf¸ø<input type="date">¸³Öµ£¬Ê¹ÓÃth:field<input type="date" th:field="${emp.birth}" >
+th:field£¬ÓÃ·¨£ºth:field="*{name}"£¬(ÓÃÀ´°ó¶¨ºóÌ¨¶ÔÏóºÍ±íµ¥Êý¾Ý)
 Ê¹ÓÃ th:value×¢ÒâÈÕÆÚ¸ñÊ½£¬Îªxxxx-xx-xx¡£Àý£º2018-02-05.ÔÂ·Ý²»ÄÜ´óÓÚ12£¬ÈÕ²»ÄÜ´óÓÚ31¡£
 36.¸ù¾ÝSpringMVCÖÐµÄHiddenHttpMethodFilterÔ´Âë£¬¸ü¸ÄÇëÇó·½Ê½£¬¿É´´½¨Ò»¸öinputÏî£¬name="_method";Öµ¾ÍÊÇÎÒÃÇÖ¸¶¨µÄÇëÇó·½Ê½
 Àý£º<input type="hidden" name="_method" value="put"/>ÔÚ¸Ãform±íµ¥ÖÐÇëÇóÎªPUTÇëÇó¡£
@@ -99,3 +100,18 @@ springbootÓÐ×Å×Ô¼ºµÄ´íÎó´¦Àí»úÖÆ£¬³öÏÖ´íÎó»áÔÚºó½øÐÐÌø×ª£¬²»»á±»shiroÀ¹½Ø¡£µ«ÊÇÔ
 46.ÏîÄ¿ÖÐ²éÑ¯²»µ½Êý¾Ýµ«ÊÇÔÚÊý¾Ý¿âÖÐ¿ÉÒÔ²éµ½¡£ÐèÒªÉèÖÃÊý¾Ý±àÂë¸ñÊ½
 	 jdbc:mysql://localhost:3306/teachingbase?useUnicode=true&characterEncoding=utf8
 47.Ê¹ÓÃzTreeÊ±£¬²»ÊÇ×îºóÒ»¸önode£¬ÆäËûnode²»ÏÔÊ¾name¡£ÉèÖÃview.showLine=false;¾Í¿ÉÒÔÕý³£ÏÔÊ¾ÁË£¬µ«ÊÇÕâ¸öÊôÐÔÊÇ¿ØÖÆÏÔÊ¾Á¬½ÓÏßµÄ¡£°æ±¾jquery.ztree.all-3.5.min.js
+48.thymeleaf(th:each th:selected) ´ÓºóÌ¨¶¯Ì¬»ñÈ¡ÏÂÀ­¿òÊý¾Ý»ØÏÔ¼°Ñ¡ÖÐ
+	<select class="select "  name="teacherId">
+		<option>Ñ¡ÔñÀÏÊ¦</option>
+		<option th:selected="${base.teacher.teacherId eq teacher.teacherId}" th:each="teacher:${teachers}" th:value ="${teacher.teacherId}" th:text="${teacher.teacherName}"></option>
+	</select>
+49.ºóÌ¨´«²Î¸øÇ°Ì¨textarea¸³Öµ£¬Ê¹ÓÃth:text="${}"
+50.¶àÏß³Ìjion(),ÈÃ¡°Ö÷Ïß³Ì¡±µÈ´ý¡°×ÓÏß³Ì¡±½áÊøÖ®ºó²ÅÄÜ¼ÌÐøÔËÐÐ¡£
+	run(),Ö±½ÓÔËÐÐÏß³ÌÖÐµÄrun();start()·½·¨À´Æô¶¯Ò»¸öÏß³Ì£¬ ÕâÊ±´ËÏß³ÌÊÇ´¦ÓÚ¾ÍÐ÷×´Ì¬£¬ ²¢Ã»ÓÐÔËÐÐ¡£ È»ºóÍ¨¹ý´ËThreadÀàµ÷ÓÃ·½·¨run()À´Íê³ÉÆäÔËÐÐ²Ù×÷µÄ
+	wait(),µ¼ÖÂµ±Ç°µÄÏß³ÌµÈ´ý£¬Ö±µ½ÆäËûÏß³Ìµ÷ÓÃ´Ë¶ÔÏóµÄnotify( ) ·½·¨»ò notifyAll( ) ·½·¨;
+	notify(),notify»½ÐÑÔÚ´Ë¶ÔÏó¼àÊÓÆ÷ÉÏµÈ´ýµÄµ¥¸öÏß³Ì
+¡¡¡¡µÚÒ»ÊÇ´´½¨×´Ì¬¡£ÔÚÉú³ÉÏß³Ì¶ÔÏó£¬²¢Ã»ÓÐµ÷ÓÃ¸Ã¶ÔÏóµÄstart·½·¨£¬ÕâÊÇÏß³Ì´¦ÓÚ´´½¨×´Ì¬¡£
+¡¡¡¡µÚ¶þÊÇ¾ÍÐ÷×´Ì¬¡£µ±µ÷ÓÃÁËÏß³Ì¶ÔÏóµÄstart·½·¨Ö®ºó£¬¸ÃÏß³Ì¾Í½øÈëÁË¾ÍÐ÷×´Ì¬£¬µ«ÊÇ´ËÊ±Ïß³Ìµ÷¶È³ÌÐò»¹Ã»ÓÐ°Ñ¸ÃÏß³ÌÉèÖÃÎªµ±Ç°Ïß³Ì£¬´ËÊ±´¦ÓÚ¾ÍÐ÷×´Ì¬¡£ÔÚÏß³ÌÔËÐÐÖ®ºó£¬´ÓµÈ´ý»òÕßË¯ÃßÖÐ»ØÀ´Ö®ºó£¬Ò²»á´¦ÓÚ¾ÍÐ÷×´Ì¬¡£
+¡¡¡¡µÚÈýÊÇÔËÐÐ×´Ì¬¡£Ïß³Ìµ÷¶È³ÌÐò½«´¦ÓÚ¾ÍÐ÷×´Ì¬µÄÏß³ÌÉèÖÃÎªµ±Ç°Ïß³Ì£¬´ËÊ±Ïß³Ì¾Í½øÈëÁËÔËÐÐ×´Ì¬£¬¿ªÊ¼ÔËÐÐrunº¯Êýµ±ÖÐµÄ´úÂë¡£
+¡¡¡¡µÚËÄÊÇ×èÈû×´Ì¬¡£Ïß³ÌÕýÔÚÔËÐÐµÄÊ±ºò£¬±»ÔÝÍ££¬Í¨³£ÊÇÎªÁËµÈ´ýÄ³¸öÊÂ¼þµÄ·¢Éú(±ÈÈçËµÄ³Ïî×ÊÔ´¾ÍÐ÷)Ö®ºóÔÙ¼ÌÐøÔËÐÐ¡£sleep£¬suspend£¬waitµÈ·½·¨¶¼¿ÉÒÔµ¼ÖÂÏß³Ì×èÈû¡£
+¡¡¡¡µÚÎåÊÇËÀÍö×´Ì¬¡£Èç¹ûÒ»¸öÏß³ÌµÄrun·½·¨Ö´ÐÐ½áÊø»òÕßµ÷ÓÃstop·½·¨ºó£¬¸ÃÏß³Ì¾Í»áËÀÍö¡£¶ÔÓÚÒÑ¾­ËÀÍöµÄÏß³Ì£¬ÎÞ·¨ÔÙÊ¹ÓÃstart·½·¨ÁîÆä½øÈë¾ÍÐ÷¡£
