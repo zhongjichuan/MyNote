@@ -1,0 +1,25 @@
+1.在使用JPA时，使用delete操作时，需要使用事务@Transactional。
+  在jpa容器中使用@Query写jpql时，涉及到删除或修改操作，需要加入注解修饰，通知springdata，这个是update或delete操作。默认情况下，是只读，所以查询不需要此注解。
+2.Controller中的参数被@RequestBody修饰时，在postman中测试参数要以JSON的格式发送。Body->raw->JSON(application/json)。
+3.gradle讲解。  https://blog.csdn.net/lpjishu/article/details/80471545
+4.forEach()方法不会返回执行结果，而是undefined。也就是说，forEach()会修改原来的数组。而map()方法会将元素组中的元素执行所提供的的函数，得到一个新的数组并返回。
+5.Spring StateMachine 有限状态机
+http://blog.didispace.com/spring-statemachine/
+https://blog.csdn.net/firebat/article/details/89886922
+https://www.jianshu.com/p/a61d24d7bad5
+http://blog.sina.com.cn/s/articlelist_2098817250_8_1.html
+https://docs.spring.io/spring-statemachine/docs/1.2.3.RELEASE/reference/htmlsingle/
+6.Java 8允许在接口中加入具体方法。接口中的具体方法有两种，default方法和static方法，identity()就是Function接口的一个静态方法。
+Function.identity()返回一个输出跟输入一样的Lambda表达式对象，等价于形如t -> t形式的Lambda表达式
+7.@Component和@Bean的区别 https://blog.csdn.net/weixin_42493179/article/details/86584341
+@Component注解表明一个类会作为组件类，并告知Spring要为这个类创建bean；
+@Bean注解告诉Spring这个方法将会返回一个对象，这个对象要注册为Spring应用上下文中的bean。通常方法体中包含了最终产生bean实例的逻辑。
+两者的目的是一样的，都是注册bean到Spring容器中。
+区别：@Component（@Controller、@Service、@Repository）通常是通过类路径扫描来自动侦测以及自动装配到Spring容器中。
+而@Bean注解通常是我们在标有该注解的方法中定义产生这个bean的逻辑。@Component 作用于类，@Bean作用于方法
+8.在Spring Boot中通过@EnableCaching注解自动化配置合适的缓存管理器（CacheManager），Spring Boot根据下面的顺序去侦测缓存提供者：
+Generic、JCache (JSR-107)、EhCache 2.x、Hazelcast、Infinispan、Redis、Guava、Simple。
+除了按顺序侦测外，我们也可以通过配置属性spring.cache.type来强制指定。
+Spring Boot会在侦测到存在Redis的依赖并且Redis的配置是可用的情况下，使用RedisCacheManager初始化CacheManager
+配置多个CacheManager:https://blog.csdn.net/qq_26440803/article/details/90145543
+9.热部署：https://github.com/ilanyu/ReverseProxy/releases/tag/v1.0
