@@ -1,0 +1,359 @@
+1.在jpa容器中使用@Query写jpql时，涉及到删除或修改操作，需要加入注解@Modify修饰，告诉springdata，这个是update或delete操作。默认情况下，是只读，所以查询不需要此注解。
+2.Controller中的参数被@RequestBody修饰时，在postman中测试参数要以JSON的格式发送。Body->raw->JSON(application/json)。
+3.gradle讲解。  https://blog.csdn.net/lpjishu/article/details/80471545
+4.forEach()方法不会返回执行结果，而是undefined。也就是说，forEach()会修改原来的数组。而map()方法会将元素组中的元素执行所提供的的函数，得到一个新的数组并返回。
+	forEach() 对于空数组是不会执行回调函数的。
+5.Spring StateMachine 有限状态机，有限的状态在一定条件下发生状态转变后，执行一些动作
+http://blog.didispace.com/spring-statemachine/
+https://blog.csdn.net/firebat/article/details/89886922
+http://blog.sina.com.cn/s/articlelist_2098817250_8_1.html
+https://docs.spring.io/spring-statemachine/docs/1.2.3.RELEASE/reference/htmlsingle/
+6.Java 8允许在接口中加入具体方法。接口中的具体方法有两种，default方法和static方法，identity()就是Function接口的一个静态方法。
+Function.identity()返回一个输出跟输入一样的Lambda表达式对象，等价于形如t -> t形式的Lambda表达式
+7.@Component和@Bean的区别 https://blog.csdn.net/weixin_42493179/article/details/86584341
+@Component注解表明一个类会作为组件类，并告知Spring要为这个类创建bean；
+@Bean注解告诉Spring这个方法将会返回一个对象，这个对象要注册为Spring应用上下文中的bean。通常方法体中包含了最终产生bean实例的逻辑。
+两者的目的是一样的，都是注册bean到Spring容器中。
+区别：@Component（@Controller、@Service、@Repository）通常是通过类路径扫描来自动侦测以及自动装配到Spring容器中。
+而@Bean注解通常是我们在标有该注解的方法中定义产生这个bean的逻辑。@Component 作用于类，@Bean作用于方法
+8.在Spring Boot中通过@EnableCaching注解自动化配置合适的缓存管理器（CacheManager），Spring Boot根据下面的顺序去侦测缓存提供者：
+Generic、JCache (JSR-107)、EhCache 2.x、Hazelcast、Infinispan、Redis、Guava、Simple。
+除了按顺序侦测外，我们也可以通过配置属性spring.cache.type来强制指定。
+Spring Boot会在侦测到存在Redis的依赖并且Redis的配置是可用的情况下，使用RedisCacheManager初始化CacheManager
+配置多个CacheManager:  https://blog.csdn.net/qq_26440803/article/details/90145543
+9.热部署：https://github.com/ilanyu/ReverseProxy/releases/tag/v1.0
+   https://blog.csdn.net/csdnlihai/article/details/85620174
+Jrebel要设置为 work offline。
+  IDEA激活：https://mp.weixin.qq.com/s/a-3SJFamCCQXh1luCKeiVQ
+  navicat激活：http://www.360doc.com/content/20/0722/19/19244573_926169245.shtml
+10.springdataJPA中，对于save（Object）方法的解释：如果执行此方法是对象中存在id属性，即为更新操作会先根据id查询，再更新    
+如果执行此方法中对象中不存在id属性，即为保存操作.
+ 在saveAndFlush上，此命令中的更改将立即刷新到DB。使用save，就不一定了，它可能只暂时保留在内存中，直到发出flush或commit命令。
+Spring Data JPA和mybatis-plus中批量插入更新都是循环调用单次写操作。jpa中saveAll()循环调用save()，mybatis-plus是一条条插入，最后统一flush。
+//mybatis-plus insertBatch源码
+String sqlStatement = this.sqlStatement(SqlMethod.INSERT_ONE);
+for(int i = 0; i < size; ++i) {
+    batchSqlSession.insert(sqlStatement, entityList.get(i));
+    if (i >= 1 && i % batchSize == 0) {
+        batchSqlSession.flushStatements();
+    }
+}
+batchSqlSession.flushStatements();
+
+//网上另一种方法
+@Transactional
+public void add(List<Item> itemList) {
+    SqlSession session = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
+    ItemMapper mapper = session.getMapper(ItemMapper.class);
+    for (int i = 0; i < itemList.size(); i++) {
+        mapper.insertSelective(itemList.get(i));
+        if(i%1000==999){//每1000条提交一次防止内存溢出
+            session.commit();
+            session.clearCache();
+        }
+    }
+    session.commit();
+    session.clearCache();
+}
+
+//JPA使用flush批量插入
+https://www.jianshu.com/p/65f444257662?utm_campaign=shakespeare
+
+客户端对实体类中数据的改变和手写的任何SQL语句都是保存在客户端的内存中，当执行了flush()后，对数据库的修改就发送到数据库服务器端的数据高速缓冲区，而不是数据文件中,即并没有真正的持久化，其他数据库连接也看不到这些数据。
+commit操作才是真正的将实体数据持久化至数据库，commit()内部也会调用flush()。
+11.springdata中findOne()=JPA中find(),为立即加载。
+			   getOne()=getReference(),为懒加载，需要配合事务使用。
+12.springboot 启动会扫描以下位置的application.properties或者application.yml文件作为Spring boot的默认配置文件。bootstrap文件又优先application文件
+–file:./config/ -> –file:./ -> –classpath:/config/  ->  –classpath:/
+以上是按照优先级从高到低的顺序，所有位置的文件都会被加载，高优先级配置内容会覆盖低优先级配置内容。
+SpringBoot会从这四个位置全部加载主配置文件，如果高优先级中配置文件属性与低优先级配置文件不冲突的属性，则会共同存在—互补配置。
+13.isAssignableFrom()方法是判断是否为某个类的父类，instanceof关键字是判断是否某个类的子类。
+14.Git :merge:从指定的commit(s)合并到当前分支的操作（原有分支不删除）
+	rebase:从指定的commit(s)合并到当前分支的操作（原有分支删除），可将提交文件连接成一个线状
+	branch default:默认分支被视为存储库中的基本分支, 除非您指定不同的分支, 否则将自动对其发出所有请求和代码提交。
+15.jpa@query修改参数为对象：
+	update SystemFosterConfig set status = :#{#entity.status}
+16.事务的传播行为：https://blog.csdn.net/weixin_39625809/article/details/80707695
+	rollbackOnly问题：
+	https://blog.csdn.net/sinat_32023305/article/details/84105837
+	https://blog.csdn.net/paincupid/article/details/77104264y
+17.spring jpa 动态查询 in
+1.	
+ if(queryRequest.getPetIdList()!=null){
+    CriteriaBuilder.In<Object> in = cbuild.in(root.get("petId"));
+    for (String id : queryRequest.getPetIdList()) {
+    in.value(id);
+    }
+    predicates.add(in);
+}
+2.
+if(CollectionUtils.isNotEmpty(queryRequest.getPetIdList())){
+    predicates.add(root.get("petId").in(queryRequest.getPetIdList()));
+}
+
+18.react字符串变整数：this.select.value*1;
+19.当使用JPA配置关联实体时，如果有两个属性（一个是一般属性，一个是多对一的属性）映射到数据库的同一列，会报错。
+这时，在@JoinColumn注解中添加insertable = false, updatable = false就能解决。
+20.debounce JS防抖。解决按钮重复提交问题。（设定一个延迟时间，延迟时间到了再去执行函数，如果在延迟时间内重复调用则重新计算延迟时间）
+21.JS 对象中的扩展运算符(...)用于取出参数对象中的所有可遍历属性，拷贝到当前对象之中
+22.list对象排序:
+(1)集合中的对象实现Comparable接口compareTo()方法即可 => Collections.sort(list); 
+    https://www.cnblogs.com/raysource/p/9199089.html
+(2)转换成流 stream().sorted(Comparator)
+(3)List自身api List.sort(Comparator)
+
+23.profile的作用https://blog.csdn.net/liujun03/article/details/82592929
+24.HTTP:应用层的http协议，处于顶层，能跨防火墙，可在不同的局域网通信。
+RPC:远程调用，使用TCP协议，应用于第四层的传输层，速度快，但只能在局域网内通信。
+25.telnet查看某个端口是否可访问，例：telnet 114.80.67.193 8080
+https://blog.csdn.net/frankarmstrong/article/details/78477711
+26.spirngJPA中使用Like参数一定要加%。
+List employeeList = employeeRepository.findByNameLikee("%" + name + "%")
+
+27.内存可见性（Memory Visibility）：所有线程都能看到共享内存的最新状态。
+     volatile关键字修饰的变量,在内存中看到的随时是自己的最新值
+private volatile Long lastUpdatedTimestamp;//Eureka中续约涉及到的一属性
+
+28.JPA动态查询中的not in
+1. list.add(cb.not(root.get("studentId").in(notInList)));
+2. list.add(root.get("studentId").in(notInList).not);
+
+29.将对象中的部分属性转换成json字符串，将不转换的属性过滤掉。
+//fastJson
+@JSONField(serialize = false)
+private Integer status;
+//Jackson
+@JsonIgnore 
+private int age; 
+
+30.sql中将列数据转换为行数据，关键词：group_concat，与group by连用。
+31.代理模式有静态代理，JDK动态代理，Cglib代理。JDK动态代理与CGLib动态代理均是实现Spring AOP的基础。Spring AOP 中，如果实现了接口，默认使用的是 JDK 代理，也可以强制使用 CGLIB 代理，如果要代理的类没有实现任何接口，则会使用 CGLIB 进行代理，Spring 会进行自动的切换。
+ * JDK动态代理只能对实现了接口的类生成代理，而不能针对类。实现InvocationHandler接口，实现invoke()方法。
+ * CGLIB是针对类实现代理，主要是对指定的类生成一个子类，覆盖其中的方法。实现MethodInterceptor接口，实现interpret()方法。
+.java --（java编译器）-->.class（二进制文件）--(JVM)读取二进制数据-->defineClass()方法生成对应的class对象
+
+32.Spring AOP理解：https://my.oschina.net/mengyuankan/blog/2993187
+ Join point ：连接点，表示程序执行期间的一个点，在 Spring AOP 表示的就是一个方法，即一个方法可以看作是一个 Join point
+pointcut ：切点，就是与连接点匹配的谓词，什么意思呢，就是需要执行 Advice 的连接点就是切点
+Advice ：增强，在连接点执行的操作，分为前置、后置、异常、最终、环绕增强五种
+Aspect ：切面，由 pointcut 和 Advice 组成，可以简单的认为 @Aspect 注解的类就是一个切面
+Target object ：目标对象，即 织入 advice 的目标对象
+AOP proxy ：代理类，在 Spring AOP 中, 一个 AOP 代理是一个 JDK 动态代理对象或 CGLIB 代理对象
+Weaving ：织入，将 Aspect 应用到目标对象中去
+33.ElasticSearch中的mapping一旦创建，只能增加字段，而不能修改已经mapping的字段。
+解决方案：创建新索引，进行数据迁移
+34.es中修改文档的实质是删除旧文档，新增一个文档。
+spring data es基础：https://blog.csdn.net/weixin_43814195/article/details/85281287
+35.序列化与反序列化
+--序列化：对象序列化的最主要的用处就是在传递和保存对象的时候，保证对象的完整性和可传递性。序列化是把对象转换成有序字节流，以便在网络上传输或者保存在本地文件中。序列化后的字节流保存的java对象的状态以及相关的描述信息。序列化机制的核心作用就是对象状态的保存与重建
+--反序列化：客户端从文件中或网络上获得序列化后的对象字节流后，根据字节流中所保存的对象状态及描述信息，通过反序列化重建对象。反序列化会使用反射Class.forName()调用无惨构造方法生成对象。
+@JsonCreator注解，其作用就是，指定对象反序列化时的构造函数或者工厂方法，如果默认构造函数无法满足需求，或者说我们需要在构造对象时做一些特殊逻辑，可以使用该注解。
+Serializable接口是个空接口，只是一个标识，告诉程序所有实现了”我”的对象都需要进行序列化。
+序列化ID，序列化操作的时候系统会把当前类的serialVersionUID写入到序列化文件中，当反序列化时系统会去检测文件中的serialVersionUID，判断它是否与当前类的serialVersionUID一致，如果一致就说明序列化类的版本与当前类版本是一样的，可以反序列化成功，否则失败。
+如果对象存在继承关系，需要实现无参构造方法。
+https://zhuanlan.zhihu.com/p/64342725
+36.j = j++; j = ++j;
+https://blog.csdn.net/qq_36582604/article/details/81953392
+37.BIO同步阻塞I/O,NIO同步非阻塞,AIO异步非阻塞I/O的区别
+https://www.cnblogs.com/blackjoyful/p/11534985.html
+38.spring cloud stream
+https://cloud.tencent.com/developer/article/1546979
+https://my.oschina.net/didispace/blog/2962760
+订阅模式下，一个消息会被一个消费者消费或者一个消费组下的一个消费者消费。
+//1.动态绑定通道发送MQ
+public void sendMQForOrderComplete(String tradeId) {
+    BinderAwareChannelResolver.resolveDestination(MQConstant.xxx).send(new GenericMessage<>(tradeId));
+}
+//2.声明通道发送MQ
+goodsInfoStockSink.subOutput().send(new GenericMessage<>(JSONObject.toJSONString(request)));
+//将输入、输出通道绑定到指定交换器
+spring.cloud.stream.bindings.goods-info-stock-sub-output.destination=q.goods.info.stock.sub.data.request
+spring.cloud.stream.bindings.goods-info-stock-sub-input.destination=q.goods.info.stock.sub.data.request
+
+39.LCN问题
+{
+    A.provider.insert(a);//使用LCN注解
+    B.A.provider.select(a)//B中调用A的provider查不到
+    
+    原因：A,B在同一个事务组中，A事务并没有提交，B事务查不到。
+}
+
+40.关于nacos启动日志报错问题。
+09:09:16,992 |-ERROR in ch.qos.logback.classic.joran.action.ContextNameAction - Failed to rename context [bff-manager-s2b-supplier] as [nacos] java.lang.IllegalStateException: Context has been already given a name
+	at java.lang.IllegalStateException: Context has been already given a name
+	at 	at ch.qos.logback.core.ContextBase.setName(ContextBase.java:194)
+	at 	at ch.qos.logback.classic.LoggerContext.setName(LoggerContext.java:107)
+	at 	at ch.qos.logback.classic.joran.action.ContextNameAction.body(ContextNameAction.java:31)
+	at 	at ch.qos.logback.core.joran.spi.Interpreter.callBodyAction(Interpreter.java:289)
+	at 	at ch.qos.logback.core.joran.spi.Interpreter.characters(Interpreter.java:172)
+	at 	at ch.qos.logback.core.joran.spi.EventPlayer.play(EventPlayer.java:57)
+	at 	at ch.qos.logback.core.joran.GenericConfigurator.doConfigure(GenericConfigurator.java:165)
+	at 	at ch.qos.logback.core.joran.GenericConfigurator.doConfigure(GenericConfigurator.java:152)
+
+
+
+程序本身使用logback作为日志输出,使用nacos作为注册中心时，程序本身会加载logback的配置文件，读取配置中的contextName属性，之后nacos也会读取自身的nacos-logback.xml的配置，将logback的上下文contextName重新设置为nacos。这样两次contextName不同，logback不允许在程序启动后再次更改contextName,所以出现异常信息。
+springcloud使用logback日志：https://blog.csdn.net/num_zero_0/article/details/105069940
+42.JPAsql中的参数为可变参数，参数可以为空
+@Query(value = "select * from table 
+        where if(?1 !='',a=?1,1=1) and 
+        (coalesce (?2 , null) is null or b IN ( ?2 ))",nativeQuery = true)
+Page<TableBean> findByaAndb(String str, List<String> list, Pageable pageable);
+
+43.spring循环依赖
+ bean 在创建的时候可能会存在依赖注入的情况，而在创建依赖 bean 的时候，为了 避免循环依赖，那么在创建该 bean 的时候，不等到 bean 创建完成就会把创建该 bean 的 ObjectFactory 放到 singletonFactories  缓存中，一旦下一个 bean 创建的时候，需要依赖上一个 bean 则直接从 singletonFactories   缓存中获取该 ObjectFactory 来进行创建，比如 A 依赖 B，A --> B，现在创建 A 的实例 beanA，创建过程中，就把创建 A 的 ObjectFactory 放到 singletonFactories   缓存中，现在发现 A 依赖于 B，则现在要去创建 B 的实例 beanB，当创建完 beanB 后才会继续创建 beanA；如果现在发现 B 也依赖于 A，B --> A，那么在创建 beanB 的时候，也会先去创建 beanA，因为之前创建 A 的实例 beanA 的时候，已经把 A 的 ObjectFactory 放入到 缓存中了，现在直接去缓存中取出该 ObjectFactory 即可，试想一下，如果没有事先把 A 的 ObjectFactory 放到缓存中，那么在创建 B 的时候，先去创建 A ，创建 A  的时候发现依赖 B ，则又会去 创建 B，这样就会造成循环依赖，就会实例化失败。
+44.listA以listB中的对象的属性顺序排序：
+listA.sort(Comparator.comparingInt((a) -> listB.indexOf(a.xxx)));
+
+45.同时多次请求一个接口（在插入之前查询数据库中是否有相同的数据），因为mysql的隔离级别默认是可重复读（在一个事务中，直到事务结束前，都可以反复读取到事务刚开始时看到的数据，并一直不会发生变化），会同时插入到数据中，产生重复数据。可能会导致幻读。幻读：幻读的侧重点在于新增和删除。表示在同一事务中，使用相同的查询语句，第二次查询到的数据数据记录数不一样，出现幻行。A读到了B已提交新增/删除的数据。
+脏读：当前事务可以查看到别的事务未提交的数据（侧重点在于别的事务未提交）。
+不可重读：不可重读的侧重点在于更新修改数据。表示在同一事务中，查询相同的数据范围时，同一个数据资源变化了。A读到了B已提交修改的数据。
+可串行化：最高的隔离级别，在每个读的数据行上加上共享锁。可能导致大量的超时现象和锁竞争。
+46.高并发解决的办法：
+（1）分布式锁（2）数据库唯一索引（3）接口幂等性（4）数据库锁
+  （5）数据暂落到数据库，之后异步处理数据业务
+47.redis
+击穿: 指的是单个key在缓存中查不到，去数据库查询，如果数据库数据量大并且是高并发的情况下那么就可能会造成数据库压力过大而崩溃。
+雪崩指的是多个key查询并且出现高并发，缓存中失效或者查不到，然后都去db查询，从而导致db压力突然飙升，从而崩溃。
+穿透是指缓存和数据库中都没有的数据，并且被大量访问，导致请求无法建立缓存的key，使得请求直接访问到DB，对DB造成很大压力。
+解决方案：https://blog.csdn.net/kongtiao5/article/details/82771694
+布隆过滤器解决缓存穿透：https://zhuanlan.zhihu.com/p/348332384
+48.高并发情况下多线程修改mongo同一条数据，可能会报异常：
+Command failed with error 112 (WriteConflict)(分布式锁)
+49.seata: 
+http://seata.io/zh-cn/blog/seata-quick-start.html
+http://www.iocoder.cn/Spring-Boot/Seata/?self
+50.
+垂直分表：将一个表按照字段分成多表，每个表存储其中一部分字段。
+垂直分库：按照业务将表进行分类，分布到不同的数据库上面，每个库可以放在不同的服务器上，即微服务概念
+水平分表：在同一个数据库内，把同一个表的数据按一定规则拆到多个表中。（如marketing,message）
+水平分库：把同一个表的数据按一定规则拆到不同的数据库中，每个库可以放在不同的服务器上（主从库）。
+PS：水平分表分库注重复制；垂直分表分库注重业务的拆分。
+51.
+@SpringBootApplicatoin是用的@ComponentScan扫描，扫描的是Component，包括@Component, @Controller, @Service, @Repository等，会将使用该注解的组件生成bean;
+SpringBoot使用feign要在启动类上加上注解@EnableFeignClients，该注解扫描@FeignClient并将其生成bean。可使用basePackages指定Feign的扫描路径。(否则会会报找不到bean的错误。required a bean of type)
+52.引用对象作为方法参数，方法中修改参数，却不能改变外部对象的值？
+Java对象作为参数传递给一个方法时，实际上传递的是这个对象引用的拷贝，被拷贝的引用和拷贝的引用指向同一个内存地址，即同一个对象。在方法中操作引用，会同步修改外部对象。但，如果在方法中改变参数引用（拷贝的引用）指向的内存地址，对方法外的引用是不会产生任何影响的
+Java是值传递：形参的改变不会对实参产生影响
+https://blog.csdn.net/qq_28988969/artic le/details/79084814
+53.@Async和@Transactional注解本质使用的是动态代理，在同一个类中注意方法的自调用会导致注解不生效，使用的不是代理对象，切面无法生效。
+54.两阶段提交(2PC)，是将整个事务流程分为两个阶段，准备阶段（Prepare phase）、提交阶段（commit phase），参与者向协调者通知自己的事务情况，最后协调者在统一决定让事务提交还是回滚。seata中的AT模式与传统2PC不同，传统2PC在一阶段不会释放连接，在第二阶段统一提交或回滚（例：LCN）；而seata的AT模式是在一阶段提交，并向undo_log表写数据（用于回滚），然后向TC报告事务执行结果，此时在二阶段各分支已释放数据库连接资源，TC通过各分支事物的执行结果在统一决定是否回滚。
+Seate的AT模式，基于代理数据源，记录执行数据快照的方式，对于非关系型数据库并不支持事务的回滚。使用TCC模式，通过代码侵入的方式增加事务回滚的处理。
+55.mongo4.0事务开启：
+@Configuration
+public class TransactionConfig {
+    @Bean
+    MongoTransactionManager transactionManager(MongoDbFactory factory){
+        return new MongoTransactionManager(factory);
+    }
+}
+
+56. dependencyManagement提供了一种管理依赖版本号的方式。在父pom中，用dependencyManagement元素声明所依赖的jar包的版本号等信息，那么所有子项目再次引入此依赖jar包时则无需显式的列出版本号，如果指定了版本号就是用自己的版本。
+57. sql执行顺序：
+1、FROM（将最近的两张表，进行笛卡尔积）—VT1
+2、ON（将VT1按照它的条件进行过滤）—VT2
+3、LEFT JOIN（保留左表的记录）—VT3
+4、WHERE（过滤VT3中的记录）–VT4…VTn
+5、GROUP BY（对VT4的记录进行分组）—VT5
+6、HAVING（对VT5中的记录进行过滤，在聚合后对组记录进行筛选）—VT6
+7、SELECT（对VT6中的记录，选取指定的列）–VT7
+8、ORDER BY（对VT7的记录进行排序）–游标
+9、LIMIT（对排序之后的值进行分页）
+58. MySQL时间格式化格式描述：
+%U 周 (00-53) 星期日是一周的第一天
+%u 周 (00-53) 星期一是一周的第一天
+%V 周 (01-53) 星期日是一周的第一天，与 %X 使用，没有0周
+%v 周 (01-53) 星期一是一周的第一天，与 %x 使用，没有0周
+%X 年，其中的星期日是周的第一天，4 位，与 %V 使用
+%x 年，其中的星期一是周的第一天，4 位，与 %v 使用
+//根据年-周获取日期
+LocalDate localDate 
+    = now.with(WeekFields.ISO.weekBasedYear(), m)
+        .with(WeekFields.ISO.weekOfYear(), n);//第一周从周一开始，不计算0周
+
+59.
+1./**
+ * 分割list
+ * @param collection 目标集合
+ * @param maxSize 分页数量
+ * @param splitSize 分割值
+ * @return
+ */
+public static <T> List<Collection> splitList(Collection<T> collection, int maxSize, int splitSize) {
+    if(CollectionUtils.isEmpty(collection)) return Collections.emptyList();
+    return Stream.iterate(0, f -> f + 1) //生成流
+            .limit(maxSize) //进行截断操作，获取其前N个元素
+            .parallel()
+            .map(a -> collection.parallelStream().skip(a * splitSize).limit(splitSize).collect(Collectors.toList()))
+            .filter(b -> !b.isEmpty())
+            .collect(Collectors.toList());
+}
+2.com.google.common.collect.Lists.partition(List<T> list, int size);
+
+60.索引不生效原因：可能是两张表字段字符集不同；
+61.Mybatis有着内部定义的typeHandler用于jdbcType和javaType之间的转换，大部分时候不需要显性声明。对于枚举值，要显示声明。
+//例1：
+<result column="del_flag" jdbcType="TINYINT" property="delFlag" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+//例2
+and del_flag = #{delFlag,jdbcType=TINYINT,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+
+62.mongo查询
+db.getCollection('trade').find({'tradeItems.isAppointmentSaleGoods':true,
+'tradeState.payTime':{$gt:ISODate("2021-02-02T17:42:24.068+08:00")}})
+
+63.Mybatis中#{}为参数占位符，预编译时用 ? 代替，在变量替换时会加上引号‘’
+${}为字符串拼接符，在变量替换时不会加上引号‘’,该变量直接和sql拼接，存在sql注入的问题。
+64.Mybatis主键回填useGeneratedKeys设为true,打开主键回传功能；keyProperty指明主键用那个接收属性接收
+<insert id="insertBook" useGeneratedKeys="true" keyProperty="id">
+        insert into t_book (b_name,author) values ( #{name},#{author} );
+</insert>
+
+65.三次握手的目的是“为了防止已经失效的连接请求报文段突然又传到服务端，因而产生错误”。
+TCP建立连接需要三次握手，断开连接需要四次挥手。
+https://blog.csdn.net/qq_39907229/article/details/83012709
+67.数据库索引--B+树：非叶子节点上是不存储数据的，仅存储键值；叶子节点存储了关键字和行记录
+
+70.setnx，当key不存在则进行存储；key存在则不进行任何操作
+redisson原理：
+1.rLock.lock()实际是将lua脚本发送给redis执行（redis执行LUA脚本是原子性操作，执行过程不会被其他请求打断），生成一个hash数据结构的key，过期时间默认30s，key中包含了一个标识，表明此次锁是哪个线程；
+2.启动一个周期性的定时任务给这个key续约，延长过期时间，即看门狗；避免redisson节点宕机，锁一直处于死锁
+3.其他线程尝试上锁会被拒绝然后进入while循环，不停的尝试加锁；
+4.线程再次上锁，通过hash中的信息判断线程信息通过后，锁的加锁次数会增加；
+
+https://mp.weixin.qq.com/s/y_Uw3P2Ll7wvk_j5Fdlusw
+https://www.cnblogs.com/kiko2014551511/p/11527108.html
+RLock是Lock接口的实现，lock()，tryLock()，unLock()都是JUC Lock接口中的方法。
+71.如何保证redis和mysql数据一致性？https://zhuanlan.zhihu.com/p/58536781
+//延迟双删
+public void write(String key,Object data){
+     redis.delKey(key);
+     db.updateData(data);
+     Thread.sleep(500);
+     redis.delKey(key);}
+
+72.RabbitMQ没有提供延迟队列功能，但是可以使用 ： TTL（存活时间） + 死信队列 来实现延迟队列效果；或者MQ延迟插件，消息发送时，在header添加”x-delay”参数来控制消息的延时时间     
+73.hashCode和equals https://www.cnblogs.com/whgk/p/6071617.html
+74.HashMap，是数组+链表+红黑树。
+(1)HashMap每次扩容都是2的幂次方，为了使数据均匀分配到每个数组中，使用的算法是取模hash % length。而计算机取模的效率远不如与的效率，hash& (length-1)运算等价于对length取模。
+(2)链表长度>8且数组长度>64时转化为红黑树，起初每次扩容，key在数组中存储的位置可能会变化tab[i = (length - 1) & hash]，会使链表变短，在数组长度小于64时，相比红黑树查询效率更高。
+(3)HashMap扩容时机，当put结束后，HashMap的++size > length * loadFactor会进行扩容。
+(4)HashMap扩容后，会伴随着一次重新hash分配，会遍历所有元素。在进行扩容时，使用的 rehash 方式非常巧妙，因为每次扩容都是翻倍，与原来计算的 (n - 1) & hash 的结果相比，只是多了一个 bit 位，所以结点要么就在原来的位置，要么就被分配到 “原位置 + 旧容量” 这个位置。
+(5)HashMap中hash值的计算，为什么Map中只能存在一个null？
+static final int hash(Object key) {
+    int h;
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+}
+
+(6)HashMap线程不安全，产生死锁的问题？
+在多线程场景下，使用hashMap进行put()操作会引起死循环。HashMap在多线程环境下，进行同时扩容，重新生成链表结构时可能会出现循环链表，即Entry的next节点永远不为空。这个在调用get()方法时就会产生死循环。
+https://gitee.com/SongYu-SY/blog_source_code/blob/master/HashMap.md
+https://blog.csdn.net/woshimaxiao1/article/details/83661464
+https://blog.csdn.net/qq_40574571/article/details/97612100
+https://joonwhee.blog.csdn.net/article/details/106324537
+
+
+
+HashTable是线程安全的，但是性能差。JDK1.7中，ConcurrentHashMap采用的是分段锁，结构是多个Segment对象（继承了ReentrantLock），Segment对象中是n个HashEntry。每个Segment对象都有锁，一个线程访问时上锁，不影响其他线程访问其他Segment对象。
+JDK1.8中，ConcurrentHashMap放弃了原有的Segment分段锁，采用CAS + synchronized实现更加细粒度的锁。https://blog.csdn.net/zycxnanwang/article/details/105424734
+75.final修饰的引用类型变量，指向的地址不能变，引用变量所指向的对象中的内容还是可以改变的
+76.ArrayList、LinkedList
