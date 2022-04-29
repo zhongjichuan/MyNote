@@ -1,0 +1,200 @@
+1.apollo入门：
+https://blog.csdn.net/qq_40378034/article/details/96568615
+https://blog.csdn.net/qq_40378034/article/details/96606329
+Git指南
+apollo工作原理 https://www.cnblogs.com/puti306/p/11787220.html
+apollo使用本地缓存：增加启动参数 -Denv=local
+windows:C:\opt\data\flexible-platform-web\config-cache
+Mac/Linux: /opt/data/{appId}/config-cache
+
+2.@Mapper标注在接口上，用于将该接口交给IOC容器管理；
+   @MapperScan的作用是将目标路径下的接口都交个IOC，@Mapper可以不写（写了也不会冲突）
+3.Eureka相关配置详解：
+1.//配置服务名，默认取 spring.application.name 配置值，如果没有则为 unknown。eureka.instance.appname优先级更高。
+//列表页
+spring.application.name  eureka.instance.appname
+2.//配置服务实例名称，默认值为${spring.cloud.client.hostname}:${spring.application.name}:${spring.application.instance_id:${server.port}}，
+//例：DiscoveryClient_UCENTER/DESKTOP-J3JKMGQ:ucenter:8100
+eureka.instance.instance-id
+3.//应用实例主机名
+eureka.instance.hostname
+4.//客户端在注册时使用自己的IP而不是主机名，缺省：false
+eureka.instance.prefer-ip-address = false
+5.//实例是否在eureka服务器上注册自己的信息以供其他服务发现，默认为true
+eureka.client.register-with-eureka=false
+6.//强行剔除eureka服务 http://{}eurekaIP:port}/eureka/apps/{服务名}/{服务实例}  使用Postman,Delete
+http://172.23.3.242:8761/eureka/apps/FLEXIBLE-PLATFORM-WEB/172.36.0.53:flexible-platform-web:8101
+7.//通过改变状态，强制服务下线
+http://101.37.33.252:8083/eureka/apps/EUREKA-1/10.28.144.127:17101/status?value=OUT_OF_SERVICE
+
+4.zuul 服务路由，服务过滤：https://www.cnblogs.com/duanxz/p/7527765.html
+5.Fegin拦截器RequestInterceptor，可修改请求的头部信息。例：
+//重写RequestInterceptor中的apply()，在头部信息中增加cpytoken信息
+public RequestInterceptor requestInterceptor() {
+    return requestTemplate -> {
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) requestAttributes;
+        HttpServletRequest request = servletRequestAttributes.getRequest();
+        String cpytoken = request.getHeader("cpytoken");
+        requestTemplate.header("cpytoken", cpytoken);
+    };
+}
+
+6.Spring Boot过滤器：
+@Bean
+public FilterRegistrationBean filter() {
+    FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
+    filterRegistrationBean.setFilter(new TestFilter());//设置Filter的实现类
+    filterRegistrationBean.addUrlPatterns("/pwlog/*");
+    return filterRegistrationBean;
+}
+
+7.前端单页面应用部署：https://segmentfault.com/a/1190000019205506
+8.mybatis分页原理：https://mp.weixin.qq.com/s/79e5okpm-GxOoL07eDegqQ
+9.nginx基本原理： https://zhuanlan.zhihu.com/p/31196264
+10.
+package命令完成了项目编译、单元测试、打包功能，但没有把打好的可执行jar包（war包或其它形式的包）布署到本地maven仓库和远程maven私服仓库
+install命令完成了项目编译、单元测试、打包功能，同时把打好的可执行jar包（war包或其它形式的包）布署到本地maven仓库，但没有布署到远程maven私服仓库
+deploy命令完成了项目编译、单元测试、打包功能，同时把打好的可执行jar包（war包或其它形式的包）布署到本地maven仓库和远程maven私服仓库
+11. mysql group by分组后取组中最大值
+SELECT * FROM tb_dept td,(SELECT max(id) id FROM tb_dept GROUP BY parent_id) md where td.id = md.id;
+
+12.多路复用
+
+13.下载压缩文件.zip: 
+（1）使用HuTool，轻松解决 https://hutool.cn/docs/#/core/%E5%B7%A5%E5%85%B7%E7%B1%BB/%E5%8E%8B%E7%BC%A9%E5%B7%A5%E5%85%B7-ZipUtil
+ZipUtil.zip(imageTopPath);
+File file = new File(request.getSession().getServletContext().getRealPath("/").concat(gsId), RECEIPT_IMAGES_PATH.concat(".zip"));
+FileInputStream fileInputStream = new FileInputStream(file);
+IoUtil.copy(fileInputStream, response.getOutputStream(), IoUtil.DEFAULT_BUFFER_SIZE);
+fileInputStream.close();
+
+（2）https://www.cnblogs.com/zeng1994/p/7862288.html
+  https://blog.csdn.net/lidai352710967/article/details/89887978
+PS: IO流在删除文件夹的时候，该文件夹里面必须没有文件，如果存在文件，则无法删除。通常需要递归删除，或者使用工具类FileUtils.deleteDirectory(File directory); 
+流的关闭可以使用try-with-resource，代码经过编译后会自动添加finally逻辑；
+14. 自定义验证器 ：
+@Slf4j
+public class GlobalValidator implements Validator {
+    //Validator是否要验证
+    @Override
+    public boolean supports(Class<?> clazz) {
+        return BaseRequest.class.isAssignableFrom(clazz);
+    }
+
+    //验证给定的对象，如果发生验证错误，请向给定的Errors对象注册
+    @Override
+    public void validate(Object target, Errors errors) {
+        BaseRequest baseRequest = (BaseRequest) target;
+        if (errors.hasErrors()) {
+            return;
+        }
+        try {
+            baseRequest.checkParam();
+        } catch (Exception ex) {
+            log.error("Parameter verification failure:the params:{}", baseRequest.toString());
+            if (ex instanceof BizRuntimeException) {
+                throw ex;
+            } else {
+                log.error("error message: {}", ex.getMessage());
+                throw new BizRuntimeException("参数不正确");
+            }
+        }
+    }
+}
+    //WebMvcConfigurer中声明全局验证器或者给controller绑定该验证器，这个会覆盖原有的validator,导致@Valid不生效
+    @Override
+    public Validator getValidator(){
+        return new GlobalValidator();
+    }
+    @InitBinder
+    protected void initBinder(WebDataBinder binder) {
+        binder.addValidators(new GlobalValidator());
+    }
+
+15. parallelStream并行流将部分数据拿出来，使用多线程进行任务，底层使用ForkJoin。
+最终，会有main线程和ForkJoinPool线程共同执行数据操作。main线程抛出的异常会被检测到。
+16. 在MQ中如何拿到HttpRequest，在Fegin拦截器中取出request中的参数?
+MQRequestAttributes requestAttributes = new MQRequestAttributes();
+requestAttributes.setAttribute("DZGS_ID", companyInfo.getGsid().toString(), 0);
+RequestContextHolder.setRequestAttributes(requestAttributes);
+
+//fegin拦截器
+public void apply(RequestTemplate template) {
+  RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+  if (Objects.nonNull(attributes)) {
+    if (attributes instanceof ServletRequestAttributes) {
+      HttpServletRequest request = ((ServletRequestAttributes) attributes).getRequest();
+      Enumeration<String> headerNames = request.getHeaderNames();
+      if (headerNames != null) {
+        while (headerNames.hasMoreElements()) {
+          String name = headerNames.nextElement();
+          String values = request.getHeader(name);
+          template.header(name, values);
+        }
+      }
+    }else if(attributes instanceof MQRequestAttributes){ //获取所需要的属性，设置Fegin的请求头
+      String dzgsId = (String) attributes.getAttribute("DZGS_ID", 0);
+      template.header("DZGS_ID", dzgsId);
+    }
+  }
+}
+
+17.《RabbitMQ实战指南》https://blog.csdn.net/qq_39644692/article/details/109516157
+//ConcurrentConsumers设置的是对每个listener在初始化的时候设置的并发消费者的个数
+//并发配置开启5个线程监听MQ，加快消息消费速度
+factory.setConcurrentConsumers(5);
+factory.setMaxConcurrentConsumers(10);
+//prefetch是每次从一次性从broker里面取的待消费的消息的个数，默认250
+//限流配置   consumer单位时间内接收到消息就是50条
+factory.setPrefetchCount(50);
+
+（1）如何保证MQ消费顺序？
+如果只有一个队列，一个消费者，那么顺序是能得到保证的。将队列拆分，queue1,queue2...，将消息通过关键值发送到不同的队列中，每个队列对应一个消费者。
+https://www.jianshu.com/p/02fdcb9e8784
+（2）防止消息重复消费？
+生产端通过消息的确认机制或者事务机制（会阻塞线程，等待MQ回应），确保每次只发一次消息；消费端使用redis保证幂等性。
+（3）如何保证消息不丢失？
+1.生产端通过消息的确认机制或者事务机制（会阻塞线程，等待MQ回应）确保消息发送至MQ;
+2.设置消息持久化到磁盘，持久化queue和消息；
+3.消费端使用ack机制，确保消息被正常消费。
+https://www.jianshu.com/p/5db930b2071b
+18.Spring中有个记录程序执行时间的工具类StopWatch。
+19.@Async异常捕获，实现AsyncConfigurer接口
+class SpringAsyncExceptionHandler implements AsyncUncaughtExceptionHandler {
+    @Override
+    public void handleUncaughtException(Throwable throwable, Method method, Object... obj) {
+        log.error(ExceptionUtils.getStackTrace(throwable));
+        log.error("params:::" + Arrays.toString(obj));
+    }
+}
+
+20.中台是一种基于业务能力复用目的而提出的思想或理念，它的技术实现手段可以很多，可以采用单体架构也可以采用微服务架构。
+DDD问题解决的整体过程就是：从问题空间出发，逐级抽象，层层深入和细化，从业务的宏观到技术的微观整体考虑，最终完成领域建模和微服务落地。
+https://www.jianshu.com/p/9e49bf64e8cb
+21.SpringBoot启动失败，tomcat停止，使用try{}catch{}输出异常。
+try{
+    SpringApplication.run(FlexiblePlatformWebApplication.class, args);
+} catch(Exception e) {
+    System.out.println("SpringApplication----->" + e.getMessage());
+}
+
+22. mysql存在即更新，不存在则插入insertOrUpdateTask，需要是主键或者是唯一索引。
+insert  into  t_record(oid,payee_address) values(3,'aa') 
+on duplicate key 
+update payee_address=VALUES(payee_address)
+
+23. Spring自动注入Map，Spring会在启动时，自动查找实现CollectExecutor接口的bean，放到Map中。key为bean的名字，value为实现了CollectExecutor接口的实现类。
+@Autowired
+private Map<String, CollectExecutor> collectExecutorMap;
+
+24. redis监听器
+25. EasyExcel
+Java领域解析，生成Excel比较有名的框架有Apache poi,jxl等，但他们都存在一个严重的问题就是非常的耗内存，如果你的系统并发量不大的话可能还行，但是一旦并发上来后一定会OOM或者JVM频繁的full gc。
+EasyExcel是阿里巴巴开源的一个excel处理框架，以使用简单，节省内存著称，EasyExcel能大大减少占用内存的主要原因是在解析Excel时没有将文件数据一次性全部加载到内存中，而是从磁盘上一行行读取数据，逐个解析。
+EasyExcel采用一行一行的解析模式，并将一行的解析结果以观察者的模式通知处理（AnalysisEventListener）
+Map，List扩容 ==>> 大量对象，大对象占用内存，导致频繁Full GC ==>> 大量的服务请求，并发问题
+26. MySql自定义排序函数ORDER BY FIELD()
+//按照1,3,2的自定义优先级对status排序
+select * from A order by FIELD(status,1,3,2);
+
